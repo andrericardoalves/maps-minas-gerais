@@ -1,1 +1,8 @@
-<div id="mapMG" style="height: 500px;"></div>
+<!-- <div id="mapMG" style="height: 500px;"></div> -->
+<div style="height: 500px;"
+     leaflet 
+     [leafletOptions]="options"
+     [leafletLayersControl]="layersControl" 
+     (leafletMapReady)="leafletMapReady($event)">
+     <div *ngIf="showLayer" [leafletLayer]="layer"></div>
+</div>
