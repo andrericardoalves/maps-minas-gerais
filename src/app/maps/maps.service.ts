@@ -8,8 +8,8 @@ export class MapsService {
 
   constructor(private httpCliente: HttpClient) { }
 
-   findAllCitys(){
-    const result = this.httpCliente.get('assets/geoData/geojs-31-mun.json');
+   async findAllCitys(){
+    const result = await this.httpCliente.get<any>('assets/geoData/geojs-31-mun.json').toPromise();
     return result;
   }
 }

@@ -1,14 +1,22 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapsComponent } from './maps.component';
+import { DebugElement } from '@angular/core';
+import { By } from '@angular/platform-browser'
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { MapsService } from './maps.service';
+import { HttpClientModule } from '@angular/common/http';
 
 describe('MapsComponent', () => {
   let component: MapsComponent;
   let fixture: ComponentFixture<MapsComponent>;
+  let de: DebugElement
 
-  beforeEach(async(() => {
+  beforeEach( async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MapsComponent ]
+      imports: [ LeafletModule, HttpClientModule ], 
+      declarations: [ MapsComponent ],
+      providers: [ MapsService ]
     })
     .compileComponents();
   }));
@@ -16,10 +24,13 @@ describe('MapsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(MapsComponent);
     component = fixture.componentInstance;
+    de = fixture.debugElement;
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  
 });

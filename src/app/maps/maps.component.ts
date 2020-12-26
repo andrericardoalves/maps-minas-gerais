@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import 'leaflet';
 import { MapsService } from './maps.service';
-import { tileLayer, latLng, circle, polygon, marker } from 'leaflet';
+import { latLng, MapOptions , Map } from 'leaflet';
 
 declare let L;
 
@@ -12,195 +12,111 @@ declare let L;
 })
 export class MapsComponent implements OnInit {
 
-	options
-	layersControl
-	layers
-	layer
-	showLayer
-
-	//https://github.com/Asymmetrik/ngx-leaflet
-	//https://codesandbox.io/s/ngx-leaflet-geojson-country-border-wlyw4
+	map: Map
+	options : MapOptions
+	geoJSON: any
+	info: any;
+	
+	
   constructor(private mapsService: MapsService) { }
 
   ngOnInit() {
-	//this.createMap();
-	this.addMap();
+	this.addLayers();
   }
-
-   createMap(){
-		
-		let myfrugalmap;
-		let geojson;
-
-		myfrugalmap = L.map('mapMG').setView([-19.9023386 , -44.1041379 ], 6);
-
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(myfrugalmap);
-
-		let info;
-
-		info = new L.Control();
-
-		info.onAdd = function () {
-			this._div = L.DomUtil.create('div', 'info');
-			this.update();
-			return this._div;
-		};
-
-
-		info.update = function (props) {
-			this._div.innerHTML = (props ? '<h3>Município: </h3>' +   '<h3>' + props.name + '</h3><br />'
-				: '');
-		};
-
-		info.addTo(myfrugalmap);
-
-		function resetHighlight(e) {
-			geojson.resetStyle(e.target);
-			info.update();
-		}
-
-		function zoomToFeature(e) {
-			myfrugalmap.fitBounds(e.target.getBounds());
-		}
-
-		function highlightFeature(e) {
-			const layer = e.target;
-
-			layer.setStyle({
-				weight: 3,
-				color: '#666',
-				dashArray: '',
-				fillOpacity: 0.2
-			});
-
-			if (!L.Browser.ie &&  !L.Browser.edge) {
-				layer.bringToFront();
-			}
-
-			info.update(layer.feature.properties);
-		}
-
-		//this.http.get('assets/departements.json').subscribe((json: any) => {
-      this.mapsService.findAllCitys().subscribe((json: any) => {
-		geojson =  L.geoJSON(json, {
-				style: function(feature) {
-					// switch (feature.properties.code) {
-					// 	case '44': return {color: 'white', fillColor: 'red', fillOpacity: 0.1};
-					// 	case '53':   return {color: 'white', fillColor: 'yellow', fillOpacity: 0.1};
-					// 	case '72':   return {color: 'white', fillColor: 'orange', fillOpacity: 0.1};
-					// 	case '85':   return {color: 'white', fillColor: 'green', fillOpacity: 0.1};
-					// 	case '49':   return {color: 'white', fillColor: 'blue', fillOpacity: 0.1};
-					// }
-					return {color: 'white', fillColor: 'yellow', weight: 2, dashArray:3 , fillOpacity: 0.1};
-				},
-				onEachFeature: function onEachFeature(feature, layer) {
-					layer.on({
-						mouseover: highlightFeature,
-						mouseout: resetHighlight,
-						click: zoomToFeature
-					});
-				}
-			}).addTo(myfrugalmap);
-		});
-   }
    
-   addMap(){
+  
+  addLayers(){
+  let mapboxAccessToken =	'pk.eyJ1IjoiYW5kcmVyaWNhcmRvYWx2ZXMiLCJhIjoiY2tqNjA0dWNvNG5jbzJzbHJ6dmk0YTRyeSJ9.lapluwxryTGNiXQz1Zp14A';
+  
+  const newLayer =  L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`, {
+    id: 'mapbox/light-v9',
+    attribution: '...',
+    tileSize: 512,
+    zoomOffset: -1
+  })
+
 	this.options = {
-		layers: [
-			tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
-		],
-		zoom: 5,
+		layers: [ newLayer ],
+		zoom: 6,
 		center: latLng(-19.9023386 , -44.1041379)
 	};
-
-	this.layersControl = {
-		baseLayers: {
-			'Open Street Map': tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' }),
-			'Open Cycle Map': tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '...' })
-		},
-		overlays: {
-			'Big Circle': circle([ -19.5320575,-46.0219098 ], { radius: 5000 }),
-			'Big Square': polygon([[ -20.3912461,-43.5191553 ], [ -19.4556416,-44.2752558 ], [ -18.7959248,-44.6854457 ], [ -18.9218962,-48.3336058 ]])
-		}
-	}
-
-	this.layers = [
-		circle([ -19.4719991,-42.593603], { radius: 5000 }),
-		polygon([[ -19.227365,-45.0190784 ], [ -19.1600143,-45.4629168 ], [ -19.603867,-46.9731262 ]]),
-		marker([ -20.6151311,-46.0529024 ])
-	];
-
-	this.layer = circle([ -20.7454804,-42.9179702 ], { radius: 5000 });
-	this.showLayer  = true; 
    }
 
-   leafletMapReady(map: L.Map){
-	
-	let info;
-
-		info = new L.Control();
-
-		info.onAdd = function () {
-			this._div = L.DomUtil.create('div', 'info');
-			this.update();
-			return this._div;
-		};
-
-
-	info.update = function (props) {
-			this._div.innerHTML = (props ? '<h3>Município: </h3>' +   '<h3>' + props.name + '</h3><br />'
-				: '');
-	};
-
-	info.addTo(map);
-
-	let geoJSON;
-
-	function resetHighlight(e) {
-		geoJSON.resetStyle(e.target);
-		info.update();
-	}
-
-	function highlightFeature(e) {
-		var layer = e.target;
   
-		layer.setStyle({
-		  weight: 5,
-		  color: "#666",
-		  dashArray: "",
-		  fillOpacity: 0.7
-		});
-  
-		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-		  layer.bringToFront();
-		}
-		info.update(layer.feature.properties);
-	 }	
+  resetHighlight(e) {
+	this.geoJSON.resetStyle(e.target);
+   
+  }
 
-	 function zoomToFeature(e) {
-		map.fitBounds(e.target.getBounds());
-		console.log(e, map);
-	 }
-	
-	 const onEachFeature = (feature, layer) => {
-		layer.on({
-			mouseover: highlightFeature,
-			mouseout: resetHighlight,
-			click: zoomToFeature
-		});
-	};
-	  
-	this.mapsService.findAllCitys().subscribe((json: any) => {
-		
-		geoJSON =  L.geoJSON(json, {
-		style: function(feature) {
-			return {color: 'white', fillColor: 'yellow', weight: 2, dashArray:3 , fillOpacity: 0.1};
-		},
-		onEachFeature: onEachFeature
-		}).addTo(map);
+  zoomToFeature(e) {
+	this.map.fitBounds(e.target.getBounds());
+  }
+
+  highlightFeature(e) {
+	const layer = e.target;
+
+	layer.setStyle({
+		weight: 3,
+		color: '#666',
+		dashArray: '',
+		fillOpacity: 0.2
 	});
 
+	if (!L.Browser.ie &&  !L.Browser.edge) {
+		layer.bringToFront();
+	}
+
+	this.info.update(layer.feature.properties);
+}
+
+ onEachFeature(feature, layer) {
 	
+	layer.on({
+		mouseover: (e) => this.highlightFeature(e),
+		mouseout: (e) => this.resetHighlight(e),
+		click: (e) => this.zoomToFeature(e)
+	});
   }
+
+   async leafletMapReady(map: Map){
+	this.map = map;
+
+	const cities = await this.mapsService.findAllCitys()
+		
+	  this.geoJSON =  L.geoJSON(cities, {
+		
+			style: (feature) => {
+			return {color: 'white', fillColor: '#BD0026', weight: 2, dashArray:1 , fillOpacity: 0.1};
+		},
+		
+		onEachFeature: (feature: any, layer: any) => { this.onEachFeature(feature, layer)}
+		});
+	
+		this.geoJSON.addTo(this.map);
+
+		this.infoMap();
+   }
+
+   infoMap(){
+	this.info = L.control();
+
+	this.info.onAdd =  (map) => {
+		this.info._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+		this.getNameCity();
+		return this.info._div;
+	};
+	
+	this.info.addTo(this.map);
+   
+   }
+
+   // method that we will use to update the control based on feature properties passed
+   getNameCity(){
+	this.info.update =  (props) => {
+		this.info._div.innerHTML = '<h4>City :</h4>' +  (props.name ?
+			'<b>' + props.name + '</b>' 
+			: 'Hover over a state');
+	};
+   }
 
 }
